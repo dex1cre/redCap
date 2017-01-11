@@ -52,7 +52,7 @@ def some():
 		# 	sock.sendto(b"!Ok", (data[4:], x + 2))
 
 		# else:
-		print("have sms")
+		print("have sms: ", data)
 
 		#отправляем их всем юзерам
 		for i in users_ip:
