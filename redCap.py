@@ -75,61 +75,14 @@ class Application(Frame):
 		sock.close()
 		if data != "":
 			print("get --> ", data)
-			
+
 			#отправляем их в ленту
-			self.text2.insert(0.0, "--> " + data)
+			self.text2.insert(0.0, data.replace("ʥ", "-->"))
 		else:
 			print("have not data")
 
-		# try:
-		# 	sock.connect((self.ip, self.port))
-		# 	sock.send(b"!get_m")
-
-		# 	data = sock.recv(1024).decode("utf-8") 
-
-		# 	sock.close()
-		# 	if data != "":
-		# 		print("get --> ", data)
-
-		# 		#отправляем их в ленту
-		# 		self.text2.insert(0.0, "--> " + data)
-		# 	else:
-		# 		print("have not data")
-			
-		# except:
-		# 	print("--> can't get sms")
-		# 	self.after(200, self.get_sms)
-		# 	return
-
 		self.after(200, self.get_sms)
 		return
-
-
-		# self.s.setblocking(False)
-
-		# #################
-		# #принимаем данные
-		# #################
-
-		# try:
-
-		# 	conn, addr = self.s.accept()
-
-		# 	data = conn.recv(1024).decode("utf-8")
-
-		# 	print("get --> ", data)
-
-		# 	#отправляем их в ленту
-		# 	self.text2.insert(0.0, "--> " + data)
-
-		# 	conn.close()
-		# except:
-		# 	print("--> can't get sms")
-		# 	self.after(200, self.get_sms)
-		# 	return
-
-		# self.after(200, self.get_sms)
-		# return
 
 	def conn(self):
 
@@ -154,19 +107,16 @@ class Application(Frame):
 		#запускаем фоновую функцию (Да, Да)
 		self.after(200, self.get_sms)
 
-		# #создаём сокет для приёма сообщений
-
-		# self.s = socket.socket()
-		# self.s.bind(("", int(self.t2.get())+2))
-		# self.s.listen(1)
-
-
 	def send_sms(self):
 		sock = socket.socket()
 		sock.connect((self.ip, self.port))
 		sock.send(("!mes:" + self.text3.get(0.0, END)).encode("utf-8"))
 
+		data = sock.recv(1024).decode("utf-8")
+
 		sock.close()
+
+		self.text2.insert(0.0, data.replace("ʥ", "-->"))
 
 		print("send --> ", self.text3.get(0.0, END))
 
