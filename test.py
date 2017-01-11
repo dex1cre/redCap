@@ -1,0 +1,159 @@
+#-*- coding:utf-8 -*-
+
+from tkinter import *
+
+import socket
+
+# import http.client
+
+# conn = http.client.HTTPConnection("ifconfig.me")
+# conn.request("GET", "/ip")
+# ip = conn.getresponse().read().decode("utf-8")
+# ip = ip[:len(ip)-1]
+
+# ip = ""
+
+class Application(Frame):
+	def __init__(self, master):
+		super(Application, self).__init__(master)
+		self.grid()
+		self.create_widgets()
+
+	def create_widgets(self):
+		######
+		#метки
+		######
+		#метка для адреса
+		self.l1 = Label(self, text = "Введите адрес: ", width = 20)
+		self.l1.grid(row = 0, column = 0, sticky = N)
+
+		#метка для порта
+		self.l2 = Label(self, text = "Введите порт: ", width = 20)
+		self.l2.grid(row = 2, column = 0, sticky = N)
+
+		#метка о сервере
+		self.l2 = Label(self, text = "Инфа сервера: ", width = 20)
+		self.l2.grid(row = 4, column = 0, sticky = N)
+
+		###############
+		#Текстовые поля
+		###############
+
+		#текстовое поле для адреса
+		self.t1 = Entry(self, width = 19)
+		self.t1.grid(row = 1, column = 0, sticky = N)
+
+		#текстовое поле для порта
+		self.t2 = Entry(self, width = 19)
+		self.t2.grid(row = 3, column = 0, sticky = N)
+
+		#инфа о сервере
+		self.text1 = Text(self, width = 19, height = 15, wrap = WORD)
+		self.text1.grid(row = 5, column = 0, rowspan = 5)
+
+		self.text2 = Text(self, width = 46, height = 30, wrap = WORD)
+		self.text2.grid(row = 0, column = 5, rowspan = 30)
+
+		self.text3 = Text(self, width = 46, height = 2, wrap = WORD)
+		self.text3.grid(row = 32, column = 5)
+
+		#######
+		#Кнопки
+		#######
+
+		#Поключение к серверу
+		self.btn1 = Button(self, text = "Подключиться!", width = 15, height = 2)
+		self.btn1["command"] = self.conn;
+		self.btn1.grid(row = 14, column = 0, sticky = N)
+
+
+		#Отправка смс
+		self.btn2 = Button(self, text = "Отправить!", width = 15, height = 2)
+		self.btn2["command"] = self.send_sms;
+		self.btn2.grid(row = 20, column = 0, sticky = N)
+
+	def get_sms(self):
+
+		self.s.setblocking(False)
+
+		#################
+		#принимаем данные
+		#################
+
+		try:
+			data = self.s.recv(1024).decode("utf-8")
+
+			print("get: ", data)
+
+			#отправляем их в ленту
+			self.text2.insert(0.0, "--> " + data)
+		except:
+			self.after(200, self.get_sms)
+			return
+
+		self.after(200, self.get_sms)
+		return
+
+	def conn(self):
+
+		sock_con = socket.socket()
+		sock_con.connect((self.t1.get(), int(self.t2.get()) + 1))
+		sock_con.send(b"!new")
+		data = sock_con.recv(1024).decode("utf-8")
+
+		if data == "!Ok":
+			self.ip = self.t1.get()
+			self.port = int(self.t2.get())
+
+			print("yes, conndected")
+		else:
+			print("--", data)
+
+		#создаём сокет для приёма сообщений
+
+		self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+		self.s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+		self.s.bind(("", int(self.t2.get())+2))
+
+		#создаём сокет для отправки сообщений
+
+		self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+
+		# #отправляем тестовое сообщение
+		# self.sock.sendto(b"!new" + ip.encode("utf-8"), (self.t1.get(), int(self.t2.get())))
+		# print("send first")
+
+		# #получеем ответ
+		# data = self.s.recv(1024).decode("utf-8")
+
+		# if data == "!Ok":
+		# 	self.text1.insert(0.0, "conected")
+		# 	print("all right")
+
+		# 	self.ip = self.t1.get()
+		# 	self.port = int(self.t2.get())
+		# else:
+		# 	self.text1.insert(0.0, "can't conected")
+		# 	print("can't do this")
+
+		self.after(200, self.get_sms)
+
+	def send_sms(self):
+		self.sock.sendto((self.text3.get(0.0, END)).encode("utf-8"), (self.ip, self.port))
+
+		print("send: ", self.text3.get(0.0, END))
+
+		self.text3.delete(0.0, END)
+
+
+
+#основная часть
+root = Tk()
+root.title("redCap")
+root.geometry("500x465")
+
+app = Application(root)
+
+root.mainloop()
