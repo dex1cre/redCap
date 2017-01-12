@@ -1,8 +1,14 @@
+#!/usr/bin/env python3
+
 import socket
 import time
+import random
 
 sock = socket.socket()					#сокет для принятия сообщений
-x = int(input("Введите порт: "))		#вводим порт
+
+ports = [8080, 6767, 5656]
+x = ports[random.randint(0,2)]		#вводим порт
+print("Port: ", x)
 sock.bind(("", x))						#биндим адрес
 sock.listen(10)							#включаем прослушку
 ###########################все по дефолту#############################
@@ -56,7 +62,7 @@ def ret():
 		#выводим сообщение
 		print(data)
 
-		get_sms(conn, addr)
+		# get_sms(conn, addr)
 
 	elif data == "!get_m":
 		get_sms(conn, addr)
